@@ -41,7 +41,7 @@ class Publisher:
         self.datasource_luid = None
         self.hyper_file_path = hyper_file_path
 
-    def publish(self, creation_mode='CreateNew'):
+    def publish(self, creation_mode='CreateNew', as_job:bool = False):
         """Publishes a Hyper File to a Tableau Server"""
 
         # Ensure that the Hyper File exists
@@ -103,12 +103,24 @@ class Publisher:
             logging.info(f'Create mode: {create_mode}')
             datasource_item = TSC.DatasourceItem(project_id=self.project_id, name=self.datasource_name)
             logging.info(f'Publishing datasource: \n{datasource_to_string(datasource_item)}')
-            datasource_item = server.datasources.publish(datasource_item=datasource_item,
+
+            if as_job == True:
+                publish_job = server.datasources.publish(datasource_item=datasource_item,
                                                          file_path=self.hyper_file_path,
-                                                         mode=create_mode)
-            self.datasource_luid = datasource_item.id
-            logging.info(f'Published datasource to Tableau server. Datasource LUID : {self.datasource_luid}')
+                                                         mode=create_mode, as_job=True)
 
-        logging.info("Done.")
+                logging.info(f"Datasource published asynchronously. Job ID: {publish_job.id}")
+                server.jobs.wait_for_job(publish_job)
+                logging.info(f"Datasource publish finished successfully. Job ID: {publish_job.id}")
 
-        return self.datasource_luid
+                # TODO: Get the datasource_luid (It doesn't look like needed for anything else, but may be in the future?)
+                return publish_job.id
+            else:
+                datasource_item = server.datasources.publish(datasource_item=datasource_item,
+                                                             file_path=self.hyper_file_path,
+                                                             mode=create_mode)
+                self.datasource_luid = datasource_item.id
+                logging.info(f'Published datasource to Tableau server. Datasource LUID : {self.datasource_luid}')
+                logging.info("Done.")
+
+                return self.datasource_luid

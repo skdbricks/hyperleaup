@@ -66,13 +66,18 @@ class HyperFile:
 
     def publish(self, tableau_server_url: str,
                 username: str, password: str, site_id: str = "",
-                project_name: str = "Default", datasource_name: str = "Hyperleaup_Extract") -> str:
+                project_name: str = "Default", datasource_name: str = "Hyperleaup_Extract", as_job: bool = False) -> str:
         """Publishes a Hyper File to a Tableau Server"""
         logging.info("Publishing Hyper File...")
         publisher = Publisher(tableau_server_url, username, password,
                               site_id, project_name, datasource_name, self.path)
-        self.luid = publisher.publish()
-        logging.info(f"Hyper File published to Tableau Server with datasource LUID : {self.luid}")
+        if as_job == True:
+            publish_job_id = publisher.publish(as_job=True)
+            logging.info(f"Hyper File published to Tableau Server with async job id : {publish_job_id}")
+        else:
+            self.luid = publisher.publish()
+            logging.info(f"Hyper File published to Tableau Server with datasource LUID : {self.luid}")
+
 
         return self.luid
 
