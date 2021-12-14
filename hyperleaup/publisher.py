@@ -106,7 +106,7 @@ class Publisher:
 
             if as_job == True:
                 publish_job = server.datasources.publish(datasource_item=datasource_item,
-                                                         file_path=self.hyper_file_path,
+                                                         file=self.hyper_file_path,
                                                          mode=create_mode, as_job=True)
 
                 logging.info(f"Datasource published asynchronously. Job ID: {publish_job.id}")
@@ -117,7 +117,7 @@ class Publisher:
                 return publish_job.id
             else:
                 datasource_item = server.datasources.publish(datasource_item=datasource_item,
-                                                             file_path=self.hyper_file_path,
+                                                             file=self.hyper_file_path,
                                                              mode=create_mode)
                 self.datasource_luid = datasource_item.id
                 logging.info(f'Published datasource to Tableau server. Datasource LUID : {self.datasource_luid}')
